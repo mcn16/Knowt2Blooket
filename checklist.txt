@@ -1,0 +1,5 @@
+Things to add:
+Frontend/Gui
+figure out how to launch this thing
+ai wrong answer generator
+show to teachers
