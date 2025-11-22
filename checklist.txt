@@ -1,6 +1,23 @@
 Things to add:
 Frontend/Gui
-figure out how to launch this thing
-ai wrong answer generator
-allow changes to question time limit
+gimkit and kahoot???
+v1, v2, v3
+Made by miranda negro and contact me button
+figure out how to launch this thing(render.com??)
+shuffle terms option
+clean animations
+mobile friendly
+loading bar/wheel
+use blooket and knowt title for the site title
+question mark buttons(?) on all options for explanation
+ai wrong answer generator option
+auto select random wrong answers when open website
+allow changes to question time limit(slider)
+detect when a term/definition is blank
+dark mode
+Christmas mode(snow, candy canes, cookies, extra)
+merge sets tool
+Auto-title suggestion
+account system with email and password
+show flashcards in a clean flash-card-like way(click to flip, slide right to go to the next) before you click convert
 show to teachers
