@@ -9,6 +9,9 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 import time
+from groq import Groq
+groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
 
 app = Flask(__name__)
 
@@ -48,9 +51,52 @@ def generate_random_wrongs(cards, n=3):
         rows.append((term, correct, wrongs))
     return rows
 
-# --- Blank wrong answers generator ---
+# --- Blank wrong answers generator  ---
 def generate_blank_wrongs(cards, n=3):
     return [(term, correct, [""] * n) for term, correct in cards]
+#AI WRONGS
+def generate_ai_wrongs_for_one(question, answer, n=3):
+    prompt = f"""
+    Create {n} plausible but incorrect answers for this flashcard:
+
+    Question: {question}
+    Correct Answer: {answer}
+
+    Requirements:
+    - WRONG answers only
+    - Must not include the correct answer
+    - In similar style and length to the correct answer
+    - fairly easy to understand
+    - eighth-grade reading level
+    - Realistic and believable
+    - Return each on its own line with no numbering
+    """
+
+    try:
+        resp = groq_client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=150,
+        )
+
+        # FIXED LINE
+        text = resp.choices[0].message.content.strip()
+        wrongs = text.split("\n")
+        wrongs = [w.strip("-• ").strip() for w in wrongs if w.strip()]
+
+        return wrongs[:n]
+
+    except Exception as e:
+        print("Groq error:", e)
+        return ["Option A", "Option B", "Option C"][:n]
+    
+def generate_ai_wrongs(cards, n=3):
+    rows = []
+    for q, a in cards:
+        wrongs = generate_ai_wrongs_for_one(q, a, n)
+        rows.append((q, a, wrongs))
+
+    return rows
 
 # --- Build CSV in Blooket format ---
 def build_blooketformat_csv(rows):
@@ -102,11 +148,18 @@ def convert():
         return "No Knowt URL provided.", 400
 
     cards = fetch_knowt_flashcards(url)
-
+    unique_cards = []
+    seen_questions = set()
+    for q, a in cards:
+        if q not in seen_questions:
+            unique_cards.append((q, a))
+            seen_questions.add(q)
     if mode == "random":
-        rows = generate_random_wrongs(cards)
+        rows = generate_random_wrongs(unique_cards)
+    elif mode == "ai":
+        rows = generate_ai_wrongs(unique_cards)
     else:
-        rows = generate_blank_wrongs(cards)
+        rows = generate_blank_wrongs(unique_cards)
 
     csv_data = build_blooketformat_csv(rows)
 

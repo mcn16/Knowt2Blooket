@@ -1,24 +1,55 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Knowt → Blooket Converter</title>
+    <meta charset="UTF-8">
+    <title>Knowt2Blooket Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f8f8f8;
+        }
+        h1 { text-align: center; }
+        form { background: white; padding: 20px; border-radius: 8px; }
+        label { font-weight: bold; }
+        select, input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #4a6cf7;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover { background: #3556d4; }
+    </style>
 </head>
 <body>
-    <h2>Enter Knowt Flashcard URL</h2>
-    <form action="/convert" method="POST">
-        <input type="text" name="url" placeholder="Knowt URL" style="width: 300px;"><br><br>
 
-        <label>
-            <input type="radio" name="mode" value="blank">
-            All wrong answers blank
-        </label><br>
+<h1>Knowt2Blooket Converter</h1>
 
-        <label>
-            <input type="radio" name="mode" value="random" checked>
-            Generate random wrong answers
-        </label><br><br>
+<form action="/convert" method="POST">
+    <label>Knowt Set URL:</label>
+    <input type="text" name="url" placeholder="https://knowt.com/flashcards/..." required>
 
-        <button type="submit">Convert</button>
-    </form>
+    <label>Wrong Answer Mode:</label>
+    <select name="mode">
+        <option value="blank">Blank Wrong Answers</option>
+        <option value="random">Random Wrong Answers</option>
+        <option value="ai">AI-Generated Wrong Answers</option>
+    </select>
+
+    <button type="submit">Convert to Blooket CSV</button>
+</form>
+
 </body>
 </html>
