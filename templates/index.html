@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Knowt → Blooket Converter</title>
+</head>
+<body>
+    <h2>Enter Knowt Flashcard URL</h2>
+    <form action="/convert" method="POST">
+        <input type="text" name="url" placeholder="Knowt URL" style="width: 300px;"><br><br>
+
+        <label>
+            <input type="radio" name="mode" value="blank">
+            All wrong answers blank
+        </label><br>
+
+        <label>
+            <input type="radio" name="mode" value="random" checked>
+            Generate random wrong answers
+        </label><br><br>
+
+        <button type="submit">Convert</button>
+    </form>
+</body>
+</html>

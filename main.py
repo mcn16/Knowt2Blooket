@@ -1,60 +1,63 @@
-#this is a file python file that coverts pasted knowt flashcard text in an array to a csv file that can be imported into blooket
 import random
-#git change test
 import csv
 import io
 import os
 from datetime import datetime
 from flask import Flask, request, send_file, render_template
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+import time
 
-app=Flask(__name__)
+app = Flask(__name__)
 
-#function to parse knowt flashcard text
+# --- Selenium scraper ---
+def fetch_knowt_flashcards(url):
+    """Given a public Knowt flashcard set URL, scrape the flashcards using Selenium."""
+    options = Options()
+    options.add_argument("--headless")  # run without opening a browser
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    
+    driver = webdriver.Chrome(options=options)
 
-def parse_knowt_flashcards(text):
-    cards = []
-    lines = text.strip().split('\n')
-    for line in lines:
-        parts = line.split('\t')
-        if len(parts) >= 2:
-            term = parts[0].strip()
-            definition = parts[1].strip()
-            cards.append((term, definition))
-    return cards
-#function to generate random wrong answers
+    driver.get(url)
+    time.sleep(3)  # wait for the JS to load the flashcards
+
+    # Grab flashcards
+    cards = driver.find_elements(By.CSS_SELECTOR, '[data-testid^="auto-id-"] > .flex_flex__NGgQE')
+    flashcards = []
+    for card in cards:
+        texts = card.find_elements(By.CSS_SELECTOR, '.ProseMirror p')
+        if len(texts) >= 2:
+            question = texts[0].text.strip()
+            answer = texts[1].text.strip()
+            flashcards.append((question, answer))
+
+    driver.quit()
+    return flashcards
+
+# --- Random wrong answers generator ---
 def generate_random_wrongs(cards, n=3):
-    """Return list of tuples: (term, correct, [wrong1, wrong2, wrong3])"""
     definitions = [d for _, d in cards]
     rows = []
     for term, correct in cards:
         pool = [d for d in definitions if d != correct]
-        if len (pool) > n:
-            wrongs = random.sample(pool, n)
-        else:
-            wrongs = pool + [""] * (n - len(pool))
+        wrongs = random.sample(pool, n) if len(pool) >= n else pool + [""] * (n - len(pool))
         rows.append((term, correct, wrongs))
     return rows
 
-#function to genrate blank wronng answers
+# --- Blank wrong answers generator ---
 def generate_blank_wrongs(cards, n=3):
     return [(term, correct, [""] * n) for term, correct in cards]
 
-#function to write to csv
+# --- Build CSV in Blooket format ---
 def build_blooketformat_csv(rows):
-    """
-    rows: list of (term, correct, wrongs_list)
-    This writes the required first title row, header row, then question rows.
-    For each question, the correct answer is placed in a random answer slot (1-4)
-    among the available slots; other slots are filled with wrong answers or blanks.
-    """
     output = io.StringIO()
-    writer = csv.writer(output, lineterminator="\n")#lineterminator to avoid new lines being made cus that was causing problems
+    writer = csv.writer(output, lineterminator="\n")
     
-    #title row(ughhh stupid ass blooket made me do this)
-    writer.writerow([
-        "Blooket Import Template", "", "", "", "", "", "", ""
-    ])
-    #header row(again with the stupid blooket)
+    writer.writerow(["Blooket Import Template", "", "", "", "", "", "", ""])
     writer.writerow([
         "Question #",
         "Question Text",
@@ -65,53 +68,40 @@ def build_blooketformat_csv(rows):
         "Time Limit (sec) (Max: 300 seconds)",
         "Correct Answer(s) (Only include Answer #)"
     ])
-    #question rows
+    
     for i, (term, correct, wrongs) in enumerate(rows, start=1):
-        wrongs_filled=wrongs[:]
-        answers =["","","",""]
-        not_blank_wrongs = [w for w in wrongs_filled if w.strip() != ""]
-        num_extra = min(len(not_blank_wrongs), 3)
-        total_answer_slots = 1 + num_extra
-        
-        
-        used_slot_indices = list(range(total_answer_slots))
-        physical_slots = random.sample(range(4), total_answer_slots)
-        physical_slots.sort()
-        correct_slot = random.choice(physical_slots)
+        answers = ["", "", "", ""]
+        # pick a random slot for the correct answer
+        correct_slot = random.randint(0, 3)
         answers[correct_slot] = correct
         
-        fill_slots =[s for s in physical_slots if s != correct_slot]
-        random.shuffle(not_blank_wrongs)
+        # fill the remaining slots with wrong answers
+        wrong_idx = 0
+        for slot in range(4):
+            if slot != correct_slot and wrong_idx < len(wrongs):
+                answers[slot] = wrongs[wrong_idx]
+                wrong_idx += 1
         
-        for idx, slot in enumerate(fill_slots):
-            if idx < len(not_blank_wrongs):
-                answers[slot] = not_blank_wrongs[idx]
-            else:
-                answers[slot] = ""
-        converted_correct_slot = correct_slot + 1
-        time_limit = 20 # default time change later if needed
-        writer.writerow([
-            i,
-            term,
-            answers[0],
-            answers[1],
-            answers[2],
-            answers[3],
-            time_limit,
-            str(converted_correct_slot)
-        ])
-        return output.getvalue()
+        time_limit = 20
+        writer.writerow([i, term, *answers, time_limit, str(correct_slot + 1)])
+    
+    return output.getvalue()
 
+
+# --- Flask routes ---
 @app.route("/")
 def home():
     return render_template("index.html")
 
 @app.route("/convert", methods=["POST"])
 def convert():
-    content = request.form.get("content", "")
+    url = request.form.get("url", "")
     mode = request.form.get("mode", "blank")
+    
+    if not url:
+        return "No Knowt URL provided.", 400
 
-    cards = parse_knowt_flashcards(content)
+    cards = fetch_knowt_flashcards(url)
 
     if mode == "random":
         rows = generate_random_wrongs(cards)
@@ -128,6 +118,5 @@ def convert():
     )
 
 if __name__ == "__main__":
-    # optional: set port via environment
     port = int(os.getenv("PORT", 5000))
     app.run(debug=True, port=port)
