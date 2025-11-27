@@ -64,9 +64,11 @@ def generate_ai_wrongs_for_one(question, answer, n=3):
 
     Requirements:
     - WRONG answers only
+    - not a synonym of the correct answer
+    - relevant to the question
     - Must not include the correct answer
     - In similar style and length to the correct answer
-    - fairly easy to understand
+    - easy to understand
     - eighth-grade reading level
     - Realistic and believable
     - Return each on its own line with no numbering
