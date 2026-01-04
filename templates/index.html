@@ -1,55 +1,142 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Knowt2Blooket Converter</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 40px auto;
-            padding: 20px;
-            background: #f8f8f8;
-        }
-        h1 { text-align: center; }
-        form { background: white; padding: 20px; border-radius: 8px; }
-        label { font-weight: bold; }
-        select, input[type="text"] {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            margin-bottom: 15px;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            background: #4a6cf7;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover { background: #3556d4; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Knowt2Blooket</title>
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+  <!-- Fonts bruh -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-<h1>Knowt2Blooket Converter</h1>
+  <!-- HEADER this took me so long wth -->
+  <div class="banner">
+    <img src="{{ url_for('static', filename='logo-left.png') }}" class="banner-logo">
+    <span class="banner-text">Knowt2Blooket</span>
+    <img src="{{ url_for('static', filename='logo-right.png') }}" class="banner-logo">
+  </div>
 
-<form action="/convert" method="POST">
-    <label>Knowt Set URL:</label>
-    <input type="text" name="url" placeholder="https://knowt.com/flashcards/..." required>
+  <main class="wrapper">
+<form id ="convert" method ="post" action="/convert"> 
+    <!-- URL INPUT -->
+    <section class="block">
+      <div class="label-row">
+        <h2>Knowt Flashcard URL</h2>
+        <div class="help">?
+          <div class="help-bubble">
+            Paste the link to your <b>public</b> Knowt flashcard set.
+          </div>
+        </div>
+      </div>
+      <input type="text" name ="url" placeholder="https://knowt.com/flashcards/..." />
+    </section>
 
-    <label>Wrong Answer Mode:</label>
-    <select name="mode">
-        <option value="blank">Blank Wrong Answers</option>
-        <option value="random">Random Wrong Answers</option>
-        <option value="ai">AI-Generated Wrong Answers</option>
-    </select>
+    <!-- WRONG ANSWERS -->
+   <section class="block">
+  <h2>Wrong Answer Mode</h2>
+  <!-- Added id "mode-select" -->
+  <select id="mode-select" name="mode">
+    <option value="blank">Blank wrong answers</option>
+    <option value="random">Random wrong answers</option>
+    <option value="ai">AI generated wrong answers</option>
+  </select>
+  
+  <!-- Added id "mode-desc" -->
+  <p id="mode-desc" class="desc">
+    Leaves wrong answer slots empty so you can edit them in Blooket.
+  </p>
+</section>
 
-    <button type="submit">Convert to Blooket CSV</button>
+<script>
+  const select = document.getElementById('mode-select');
+  const desc = document.getElementById('mode-desc');
+
+  // Map each option value to its corresponding description
+  const descriptions = {
+    blank: "Leaves wrong answer slots empty so you can edit them in Blooket.",
+    random: "Automatically fills slots using answers from other questions in your set.",
+    ai: "Uses artificial intelligence to generate realistic but incorrect wrong answers."
+  };
+
+  // Update text whenever the dropdown changes
+  select.addEventListener('change', (event) => {
+    const selectedValue = event.target.value;
+    desc.textContent = descriptions[selectedValue];
+  });
+</script>
+
+    <!-- TIME SLIDER -->
+    <section class="block">
+      <h2>Time Limit per Question</h2>
+      <div class="slider-row">
+        <input type="range" min="5" max="60" value="20">
+        <span class="time">20s</span>
+      </div>
+    </section>
+<input type="hidden" name="time" id="time-input" value="20">
+    <!-- SCRIPT FOR TIME SLIDER HEEHEH-->
+    <script>
+    const slider = document.querySelector('input[type="range"]');
+    const timeDisplay = document.querySelector('.time');
+    const timeInput = document.getElementById('time-input');
+
+    slider.addEventListener('input', () => {
+    // Update the visible number
+    timeDisplay.textContent = `${slider.value}s`;
+
+    // Update the hidden input so Flask can read it
+    timeInput.value = slider.value;
+    });
+    </script>
+
+    <!-- CONVERT -->
+    <div id="loading" class="spinner" style="display:none;"></div>
+    <div class="cta">
+      <button type="submit">Convert to Blooket CSV</button>
+    </div>
 </form>
+    <!-- DOCS -->
+    <section class="block">
+      <h2>How to Use</h2>
+      <ol>
+        <li>Open your flashcard set on Knowt</li>
+        <li>Make sure it’s public</li>
+        <li>Paste the URL above</li>
+        <li>Adjust settings and click convert</li>
+        <li>Inside Blooket, import the CSV file using the "CSV Import" feature</li>
+        <li>Enjoy your new Blooket set!</li>
+      </ol>
+    </section>
 
+  </main>
+
+  <footer>
+    <p>Made by Miranda Negro · k2bhelp@gmail.com · Full Code Avaible on my Github @mcn16 </p>
+  </footer>
+<script>
+  // LOADING + CONFETTI
+  const form = document.getElementById('convert');
+  const loading = document.getElementById('loading');
+
+  form.addEventListener('submit', () => {
+    loading.style.display = 'block';
+
+    // confetti animation
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+  });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </body>
 </html>

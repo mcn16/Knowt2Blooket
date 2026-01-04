@@ -19,24 +19,29 @@ app = Flask(__name__)
 def fetch_knowt_flashcards(url):
     """Given a public Knowt flashcard set URL, scrape the flashcards using Selenium."""
     options = Options()
-    options.add_argument("--headless")  # run without opening a browser
+    options.add_argument("--headless")  # run Chrome without opening a window
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    
+
     driver = webdriver.Chrome(options=options)
-
     driver.get(url)
-    time.sleep(3)  # wait for the JS to load the flashcards
 
-    # Grab flashcards
-    cards = driver.find_elements(By.CSS_SELECTOR, '[data-testid^="auto-id-"] > .flex_flex__NGgQE')
+    time.sleep(3)  # wait for JS to fully render the flashcards
+
+    # Grab all ProseMirror divs
+    prose_divs = driver.find_elements(By.CSS_SELECTOR, "div.ProseMirror")
     flashcards = []
-    for card in cards:
-        texts = card.find_elements(By.CSS_SELECTOR, '.ProseMirror p')
-        if len(texts) >= 2:
-            question = texts[0].text.strip()
-            answer = texts[1].text.strip()
-            flashcards.append((question, answer))
+
+    # Skip the first 4 divs, then pair term/definition
+    for i in range(4, len(prose_divs), 2):
+        try:
+            term = prose_divs[i].find_element(By.TAG_NAME, "p").text.strip()
+            definition = prose_divs[i + 1].find_element(By.TAG_NAME, "p").text.strip()
+            if term and definition:
+                flashcards.append((term, definition))
+        except IndexError:
+            # Just in case the last div has no pair
+            pass
 
     driver.quit()
     return flashcards
@@ -130,13 +135,13 @@ def build_blooketformat_csv(rows):
                 answers[slot] = wrongs[wrong_idx]
                 wrong_idx += 1
         
-        time_limit = 20
+        time_limit = int(request.form.get("time", 20))
         writer.writerow([i, term, *answers, time_limit, str(correct_slot + 1)])
     
     return output.getvalue()
 
 
-# --- Flask routes ---
+# flask endpoints like convert and shit
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -150,6 +155,7 @@ def convert():
         return "No Knowt URL provided.", 400
 
     cards = fetch_knowt_flashcards(url)
+    print("Fetched cards:", cards)
     unique_cards = []
     seen_questions = set()
     for q, a in cards:
