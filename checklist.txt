@@ -1,19 +1,15 @@
 Things to add:
-Frontend/Gui
 v1, v2, v3
-Made by miranda negro and contact me button
 warning that it might skip a few question by accident("This is not perfect")
-figure out how to launch this thing(render.com??)
+contact blooket with demo video
 shuffle terms option
+finish frontend GUI
+WARNING IMAGES ARE NOT ALLOWED
 clean animations
 mobile friendly
-loading bar/wheel
-use blooket and knowt title for the site title
-question mark buttons(?) on all options for explanation
-allow changes to question time limit(slider)
 detect when a term/definition is blank
 dark mode
-Christmas mode(snow, candy canes, cookies, extra)
+winter mode (snow, candy canes, cookies, extra)
 merge sets tool
 Auto-title suggestion
 account system with email and password
