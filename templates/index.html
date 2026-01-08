@@ -36,7 +36,7 @@
           </div>
         </div>
       </div>
-      <input type="text" name ="url" placeholder="https://knowt.com/flashcards/..." />
+      <input type="text" name ="url" id ="url-input" placeholder="https://knowt.com/flashcards/..." />
     </section>
 
     <!-- WRONG ANSWERS -->
@@ -98,10 +98,10 @@
     </script>
 
     <!-- CONVERT -->
-    <div id="loading" class="spinner" style="display:none;"></div>
     <div class="cta">
-      <button type="submit">Convert to Blooket CSV</button>
+      <button id="convert-btn" type="submit">Convert to Blooket CSV</button>
     </div>
+    <div id="spinner" class="spinner hidden"></div>
 </form>
     <!-- DOCS -->
     <section class="block">
@@ -119,23 +119,68 @@
   </main>
 
   <footer>
-    <p>Made by Miranda Negro · k2bhelp@gmail.com · Full Code Avaible on my Github @mcn16 </p>
+    <p>Made by Miranda Negro · k2bhelp@gmail.com</p>
+    <p>Knowt2Blooket is an independent, student-built project and is <b>not affiliated with, endorsed by, sponsored by, or officially connected to Knowt or Blooket in any way.</b></p>
+    <p>Knowt and Blooket, along with their respective logos and trademarks, are the property of their respective owners. </p>    
+    <p>This tool is provided for educational and personal-use purposes only and simply helps users convert content they already have access to. </p>
   </footer>
 <script>
-  // LOADING + CONFETTI
-  const form = document.getElementById('convert');
-  const loading = document.getElementById('loading');
+  const form = document.getElementById("convert");
+  const button = document.getElementById("convert-btn");
+  const spinner = document.getElementById("spinner");
+  form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-  form.addEventListener('submit', () => {
-    loading.style.display = 'block';
+  // 1️⃣ Show loading spinner & disable button
+  button.disabled = true;
+  button.style.display = "none";
+  spinner.classList.remove("hidden");
 
-    // confetti animation
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
+  try {
+    // 2️⃣ Send form to backend and get CSV
+    const formData = new FormData(form);
+    const res = await fetch("/convert", {
+      method: "POST",
+      body: formData
     });
-  });
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    // 3️⃣ Trigger file download
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "knowt2blooketimport.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+
+    // 5️⃣ Run gold confetti after a short delay
+    setTimeout(() => {
+      confetti({
+        particleCount: 55,
+        spread: 40,
+        startVelocity: 22,
+        gravity: 0.85,
+        scalar: 0.9,
+        ticks: 140,
+        colors: ["#f5c16c", "#facc15", "#fde68a"],
+        origin: { y: 0.65 }
+      });
+    }, 150);
+
+  } catch (err) {
+    alert("Something went wrong");
+    console.error(err);
+  }
+
+  // 6️⃣ Reset UI: hide spinner & enable button
+  spinner.classList.add("hidden");
+  button.disabled = false;
+  button.style.display = "inline-block";
+  document.getElementById('url-input').value = '';
+});
 </script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </body>

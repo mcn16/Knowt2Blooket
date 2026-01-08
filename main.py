@@ -19,29 +19,49 @@ app = Flask(__name__)
 def fetch_knowt_flashcards(url):
     """Given a public Knowt flashcard set URL, scrape the flashcards using Selenium."""
     options = Options()
-    options.add_argument("--headless")  # run Chrome without opening a window
+    options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
 
     driver = webdriver.Chrome(options=options)
     driver.get(url)
 
-    time.sleep(3)  # wait for JS to fully render the flashcards
+    time.sleep(3)
 
-    # Grab all ProseMirror divs
-    prose_divs = driver.find_elements(By.CSS_SELECTOR, "div.ProseMirror")
+    # 🔽 SCROLL until everything loads
+    last_height = driver.execute_script("return document.body.scrollHeight")
+    while True:
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(1)
+        new_height = driver.execute_script("return document.body.scrollHeight")
+        if new_height == last_height:
+            break
+        last_height = new_height
+
+    # 🔽 Grab ProseMirror div(s)
+    prose_divs = driver.find_elements(By.CLASS_NAME, "ProseMirror")
+    #debugging prints
+    print("PROSE COUNT:", len(prose_divs))
+    for i, div in enumerate(prose_divs[:3]):
+        print(f"DIV {i} TEXT:", div.text)
+    paragraphs = []
+
+    # 🔽 Collect ALL <p> tags inside ProseMirror
+    for div in prose_divs:
+        ps = div.find_elements(By.TAG_NAME, "p")
+        for p in ps:
+            text = p.text.strip()
+            if text:
+                paragraphs.append(text)
+
+    # 🔽 Skip the first 4 junk elements
+    paragraphs = paragraphs[4:]
+
     flashcards = []
 
-    # Skip the first 4 divs, then pair term/definition
-    for i in range(4, len(prose_divs), 2):
-        try:
-            term = prose_divs[i].find_element(By.TAG_NAME, "p").text.strip()
-            definition = prose_divs[i + 1].find_element(By.TAG_NAME, "p").text.strip()
-            if term and definition:
-                flashcards.append((term, definition))
-        except IndexError:
-            # Just in case the last div has no pair
-            pass
+    # 🔽 Pair term → definition
+    for i in range(0, len(paragraphs) - 1, 2):
+        flashcards.append((paragraphs[i], paragraphs[i + 1]))
 
     driver.quit()
     return flashcards
