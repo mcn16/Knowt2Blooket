@@ -28,7 +28,7 @@ def fetch_knowt_flashcards(url):
 
     time.sleep(3)
 
-    # 🔽 SCROLL until everything loads
+    # scroll until everything loads
     last_height = driver.execute_script("return document.body.scrollHeight")
     while True:
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -38,7 +38,7 @@ def fetch_knowt_flashcards(url):
             break
         last_height = new_height
 
-    # 🔽 Grab ProseMirror div(s)
+    # grab ProseMirror divs
     prose_divs = driver.find_elements(By.CLASS_NAME, "ProseMirror")
     #debugging prints
     print("PROSE COUNT:", len(prose_divs))
@@ -46,7 +46,7 @@ def fetch_knowt_flashcards(url):
         print(f"DIV {i} TEXT:", div.text)
     paragraphs = []
 
-    # 🔽 Collect ALL <p> tags inside ProseMirror
+    #  Collect ALL <p> tags inside ProseMirror
     for div in prose_divs:
         ps = div.find_elements(By.TAG_NAME, "p")
         for p in ps:
@@ -54,12 +54,12 @@ def fetch_knowt_flashcards(url):
             if text:
                 paragraphs.append(text)
 
-    # 🔽 Skip the first 4 junk elements
+    # skip the first 4 junk elements
     paragraphs = paragraphs[4:]
 
     flashcards = []
 
-    # 🔽 Pair term → definition
+    # pair up Q&A
     for i in range(0, len(paragraphs) - 1, 2):
         flashcards.append((paragraphs[i], paragraphs[i + 1]))
 
@@ -106,7 +106,7 @@ def generate_ai_wrongs_for_one(question, answer, n=3):
             max_tokens=150,
         )
 
-        # FIXED LINE
+        
         text = resp.choices[0].message.content.strip()
         wrongs = text.split("\n")
         wrongs = [w.strip("-• ").strip() for w in wrongs if w.strip()]
@@ -147,8 +147,8 @@ def build_blooketformat_csv(rows):
         # pick a random slot for the correct answer
         correct_slot = random.randint(0, 3)
         answers[correct_slot] = correct
-        
-        # fill the remaining slots with wrong answers
+
+        # fill the other slots with wrong answers
         wrong_idx = 0
         for slot in range(4):
             if slot != correct_slot and wrong_idx < len(wrongs):

@@ -42,14 +42,14 @@
     <!-- WRONG ANSWERS -->
    <section class="block">
   <h2>Wrong Answer Mode</h2>
-  <!-- Added id "mode-select" -->
+  <!-- mode select -->
   <select id="mode-select" name="mode">
     <option value="blank">Blank wrong answers</option>
     <option value="random">Random wrong answers</option>
     <option value="ai">AI generated wrong answers</option>
   </select>
-  
-  <!-- Added id "mode-desc" -->
+
+  <!-- mode description -->
   <p id="mode-desc" class="desc">
     Leaves wrong answer slots empty so you can edit them in Blooket.
   </p>
@@ -59,21 +59,21 @@
   const select = document.getElementById('mode-select');
   const desc = document.getElementById('mode-desc');
 
-  // Map each option value to its corresponding description
+  // more description stuff
   const descriptions = {
     blank: "Leaves wrong answer slots empty so you can edit them in Blooket.",
     random: "Automatically fills slots using answers from other questions in your set.",
     ai: "Uses artificial intelligence to generate realistic but incorrect wrong answers."
   };
 
-  // Update text whenever the dropdown changes
+  // update text whenever the dropdown changes
   select.addEventListener('change', (event) => {
     const selectedValue = event.target.value;
     desc.textContent = descriptions[selectedValue];
   });
 </script>
 
-    <!-- TIME SLIDER -->
+    <!-- TIME LIMIT SLIDER -->
     <section class="block">
       <h2>Time Limit per Question</h2>
       <div class="slider-row">
@@ -117,7 +117,7 @@
     </section>
 
   </main>
-
+  <!-- FOOTER  and DISCLAIMER-->
   <footer>
     <p>Made by Miranda Negro · k2bhelp@gmail.com</p>
     <p>Knowt2Blooket is an independent, student-built project and is <b>not affiliated with, endorsed by, sponsored by, or officially connected to Knowt or Blooket in any way.</b></p>
@@ -131,13 +131,13 @@
   form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // 1️⃣ Show loading spinner & disable button
+  // Show loading spinner & disable button
   button.disabled = true;
   button.style.display = "none";
   spinner.classList.remove("hidden");
 
   try {
-    // 2️⃣ Send form to backend and get CSV
+    // Send form to backend and get CSV
     const formData = new FormData(form);
     const res = await fetch("/convert", {
       method: "POST",
@@ -147,7 +147,7 @@
     const blob = await res.blob();
     const url = window.URL.createObjectURL(blob);
 
-    // 3️⃣ Trigger file download
+    // Trigger file download
     const a = document.createElement("a");
     a.href = url;
     a.download = "knowt2blooketimport.csv";
@@ -156,7 +156,7 @@
     a.remove();
     window.URL.revokeObjectURL(url);
 
-    // 5️⃣ Run gold confetti after a short delay
+    //Run gold confetti
     setTimeout(() => {
       confetti({
         particleCount: 55,
@@ -175,7 +175,7 @@
     console.error(err);
   }
 
-  // 6️⃣ Reset UI: hide spinner & enable button
+  // Reset UI for next use
   spinner.classList.add("hidden");
   button.disabled = false;
   button.style.display = "inline-block";
