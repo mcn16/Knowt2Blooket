@@ -68,6 +68,8 @@
 
   // update text whenever the dropdown changes
   select.addEventListener('change', (event) => {
+    var modeAudio = new Audio('/static/audio/switch.mp3');
+    modeAudio.play();
     const selectedValue = event.target.value;
     desc.textContent = descriptions[selectedValue];
   });
