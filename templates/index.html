@@ -44,14 +44,14 @@
   <h2>Wrong Answer Mode</h2>
   <!-- mode select -->
   <select id="mode-select" name="mode">
-    <option value="blank">Blank wrong answers</option>
+    <option value="blank">Placeholder wrong answers</option>
     <option value="random">Random wrong answers</option>
     <option value="ai">AI generated wrong answers</option>
   </select>
 
   <!-- mode description -->
   <p id="mode-desc" class="desc">
-    Leaves wrong answer slots empty so you can edit them in Blooket.
+    Puts a placeholder in the wrong answer slots so you can edit them in Blooket.
   </p>
 </section>
 
@@ -61,7 +61,7 @@
 
   // more description stuff
   const descriptions = {
-    blank: "Leaves wrong answer slots empty so you can edit them in Blooket.",
+    blank: "Puts a placeholder in the wrong answer slots so you can edit them in Blooket.",
     random: "Automatically fills slots using answers from other questions in your set.",
     ai: "Uses artificial intelligence to generate realistic but incorrect wrong answers."
   };
@@ -91,6 +91,9 @@
     slider.addEventListener('input', () => {
     // Update the visible number
     timeDisplay.textContent = `${slider.value}s`;
+    //Sound
+    var sliderAudio = new Audio('/static/audio/slider.mp3');
+    sliderAudio.play();
 
     // Update the hidden input so Flask can read it
     timeInput.value = slider.value;
@@ -99,9 +102,17 @@
 
     <!-- CONVERT -->
     <div class="cta">
-      <button id="convert-btn" type="submit">Convert to Blooket CSV</button>
+      <button onclick="playClickSound()" id="convert-btn" type="submit">Convert to Blooket CSV</button>
+      <audio id="click-audio" src="/static/audio/click.mp3" preload="auto"></audio>
     </div>
     <div id="spinner" class="spinner hidden"></div>
+    <script>
+      // Play sound effect
+      function playClickSound() {
+        var clickAudio = document.getElementById("click-audio");
+        clickAudio.play();
+      }
+    </script>
 </form>
     <!-- DOCS -->
     <section class="block">
@@ -130,7 +141,6 @@
   const spinner = document.getElementById("spinner");
   form.addEventListener("submit", async (e) => {
   e.preventDefault();
-
   // Show loading spinner & disable button
   button.disabled = true;
   button.style.display = "none";
@@ -155,6 +165,10 @@
     a.click();
     a.remove();
     window.URL.revokeObjectURL(url);
+
+    // Play sound effect
+    var confettiAudio = new Audio('/static/audio/confetti.mp3');
+    confettiAudio.play();
 
     //Run gold confetti
     setTimeout(() => {

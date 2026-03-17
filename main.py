@@ -3,7 +3,7 @@ import csv
 import io
 import os
 from datetime import datetime
-from flask import Flask, request, send_file, render_template
+from flask import Flask, request, send_file, render_template, send_from_directory
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -54,8 +54,8 @@ def fetch_knowt_flashcards(url):
             if text:
                 paragraphs.append(text)
 
-    # skip the first 4 junk elements
-    paragraphs = paragraphs[4:]
+    # skip the first 2 junk elements
+    paragraphs = paragraphs[2:]
 
     flashcards = []
 
@@ -78,7 +78,11 @@ def generate_random_wrongs(cards, n=3):
 
 # --- Blank wrong answers generator  ---
 def generate_blank_wrongs(cards, n=3):
-    return [(term, correct, [""] * n) for term, correct in cards]
+    rows = []
+    for term, correct in cards:
+        wrongs = [f"Incorrect Option {i+1}" for i in range(n)]
+        rows.append((term, correct, wrongs))
+    return rows
 #AI WRONGS
 def generate_ai_wrongs_for_one(question, answer, n=3):
     prompt = f"""
