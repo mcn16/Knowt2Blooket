@@ -1,1 +1,1 @@
-Live at Https://knowt2blooket.com
+Live at https://knowt2blooket.com
