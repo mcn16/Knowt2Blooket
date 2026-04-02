@@ -1,2 +1,1 @@
-Not published just yet....
-Download the demo .mp4 for a quick demonstration on how it works
+Live at Https://knowt2blooket.com
